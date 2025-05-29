@@ -1,0 +1,58 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'com.imprint'
+version = '0.1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Test dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    
+    // Performance testing
+    testImplementation 'org.openjdk.jmh:jmh-core:1.37'
+    testAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+}
+
+test {
+    useJUnitPlatform()
+    
+    // Enable detailed test output
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+// JMH benchmarks
+task jmh(type: JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'org.openjdk.jmh.Main'
+    args = ['-f', '1', '-wi', '3', '-i', '3']
+}
+
+compileJava {
+    options.compilerArgs << '-Xlint:unchecked'
+    options.deprecation = true
+}
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
