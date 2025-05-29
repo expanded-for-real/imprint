@@ -1,2 +1,17 @@
 **/target
 .idea
+
+# Java specific
+java/build/
+java/.gradle/
+java/gradle/
+java/gradlew
+java/gradlew.bat
+*.class
+*.jar
+*.war
+*.ear
+.idea/
+*.iml
+*.ipr
+*.iws
