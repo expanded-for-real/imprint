@@ -1,8 +1,13 @@
 package com.imprint.core;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 /**
  * Bit flags for Imprint record header.
  */
+@Getter
+@EqualsAndHashCode
 public final class Flags {
     public static final byte FIELD_DIRECTORY = 0x01;
     
@@ -16,23 +21,8 @@ public final class Flags {
         this.value = (byte) value;
     }
     
-    public byte getValue() { return value; }
-    
     public boolean hasFieldDirectory() {
         return (value & FIELD_DIRECTORY) != 0;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Flags flags = (Flags) o;
-        return value == flags.value;
-    }
-    
-    @Override
-    public int hashCode() {
-        return Byte.hashCode(value);
     }
     
     @Override
