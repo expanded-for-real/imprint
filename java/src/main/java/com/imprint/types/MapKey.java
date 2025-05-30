@@ -42,9 +42,17 @@ public abstract class MapKey {
             case INT64:
                 return fromInt64(((Value.Int64Value) value).getValue());
             case BYTES:
-                return fromBytes(((Value.BytesValue) value).getValue());
+                if (value instanceof Value.BytesBufferValue) {
+                    return fromBytes(((Value.BytesBufferValue) value).getValue());
+                } else {
+                    return fromBytes(((Value.BytesValue) value).getValue());
+                }
             case STRING:
-                return fromString(((Value.StringValue) value).getValue());
+                if (value instanceof Value.StringBufferValue) {
+                    return fromString(((Value.StringBufferValue) value).getValue());
+                } else {
+                    return fromString(((Value.StringValue) value).getValue());
+                }
             default:
                 throw new ImprintException(ErrorType.TYPE_MISMATCH, 
                     "Cannot convert " + value.getTypeCode() + " to MapKey");

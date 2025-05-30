@@ -62,7 +62,7 @@ public final class ImprintRecord {
         int endOffset = (index + 1 < directory.size()) ? 
             directory.get(index + 1).getOffset() : payload.remaining();
             
-        ByteBuffer fieldBuffer = payload.duplicate();
+        var fieldBuffer = payload.duplicate();
         fieldBuffer.position(startOffset).limit(endOffset);
         return Optional.of(fieldBuffer.slice().asReadOnlyBuffer());
     }
@@ -242,9 +242,10 @@ public final class ImprintRecord {
                 if (buffer.remaining() < length) {
                     throw new ImprintException(ErrorType.BUFFER_UNDERFLOW, "Not enough bytes for bytes value");
                 }
-                byte[] byteValue = new byte[length];
-                buffer.get(byteValue);
-                return Value.fromBytes(byteValue);
+                ByteBuffer bytesView = buffer.slice();
+                bytesView.limit(length);
+                buffer.position(buffer.position() + length);
+                return Value.fromBytesBuffer(bytesView.asReadOnlyBuffer());
 
             case STRING:
                 VarInt.DecodeResult strLengthResult = VarInt.decode(buffer);
@@ -252,11 +253,11 @@ public final class ImprintRecord {
                 if (buffer.remaining() < strLength) {
                     throw new ImprintException(ErrorType.BUFFER_UNDERFLOW, "Not enough bytes for string value");
                 }
-                byte[] strBytes = new byte[strLength];
-                buffer.get(strBytes);
+                ByteBuffer stringBytesView = buffer.slice();
+                stringBytesView.limit(strLength);
+                buffer.position(buffer.position() + strLength);
                 try {
-                    String str = new String(strBytes, StandardCharsets.UTF_8);
-                    return Value.fromString(str);
+                    return Value.fromStringBuffer(stringBytesView.asReadOnlyBuffer());
                 } catch (Exception e) {
                     throw new ImprintException(ErrorType.INVALID_UTF8_STRING, "Invalid UTF-8 string");
                 }

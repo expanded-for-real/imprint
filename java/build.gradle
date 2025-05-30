@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'me.champeau.jmh' version '0.7.2'
 }
 
 group = 'com.imprint'
@@ -32,9 +33,16 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.30'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
     
-    // Performance testing
-    testImplementation 'org.openjdk.jmh:jmh-core:1.37'
-    testAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    // Performance testing with JMH
+    jmhImplementation 'org.openjdk.jmh:jmh-core:1.37'
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    
+    // Competitor libraries for benchmarking
+    jmhImplementation 'com.google.protobuf:protobuf-java:3.25.1'
+    jmhImplementation 'org.apache.avro:avro:1.11.3'
+    jmhImplementation 'com.fasterxml.jackson.core:jackson-databind:2.16.0'
+    jmhImplementation 'com.google.flatbuffers:flatbuffers-java:23.5.26'
+    jmhImplementation 'com.esotericsoftware:kryo:5.4.0'
 }
 
 test {
@@ -46,12 +54,13 @@ test {
     }
 }
 
-// JMH benchmarks
-task jmh(type: JavaExec) {
-    dependsOn testClasses
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'org.openjdk.jmh.Main'
-    args = ['-f', '1', '-wi', '3', '-i', '3']
+// JMH configuration
+jmh {
+    fork = 1
+    warmupIterations = 3
+    iterations = 3
+    resultFormat = 'JSON'
+    includeTests = false
 }
 
 compileJava {

@@ -80,13 +80,25 @@ public final class ImprintWriter {
             case FLOAT64: return 8;
 
             case BYTES:
-                byte[] bytes = ((Value.BytesValue) value).getValue();
-                return VarInt.encodedLength(bytes.length) + bytes.length;
+                if (value instanceof Value.BytesBufferValue) {
+                    Value.BytesBufferValue bufferValue = (Value.BytesBufferValue) value;
+                    int length = bufferValue.getBuffer().remaining();
+                    return VarInt.encodedLength(length) + length;
+                } else {
+                    byte[] bytes = ((Value.BytesValue) value).getValue();
+                    return VarInt.encodedLength(bytes.length) + bytes.length;
+                }
 
             case STRING:
-                String str = ((Value.StringValue) value).getValue();
-                int utf8Length = str.getBytes(StandardCharsets.UTF_8).length;
-                return VarInt.encodedLength(utf8Length) + utf8Length;
+                if (value instanceof Value.StringBufferValue) {
+                    Value.StringBufferValue bufferValue = (Value.StringBufferValue) value;
+                    int length = bufferValue.getBuffer().remaining();
+                    return VarInt.encodedLength(length) + length;
+                } else {
+                    String str = ((Value.StringValue) value).getValue();
+                    int utf8Length = str.getBytes(StandardCharsets.UTF_8).length;
+                    return VarInt.encodedLength(utf8Length) + utf8Length;
+                }
 
             case ARRAY:
                 List<Value> array = ((Value.ArrayValue) value).getValue();
@@ -163,17 +175,31 @@ public final class ImprintWriter {
                 break;
                 
             case BYTES:
-                Value.BytesValue bytesValue = (Value.BytesValue) value;
-                byte[] bytes = bytesValue.getValue();
-                VarInt.encode(bytes.length, buffer);
-                buffer.put(bytes);
+                if (value instanceof Value.BytesBufferValue) {
+                    Value.BytesBufferValue bufferValue = (Value.BytesBufferValue) value;
+                    ByteBuffer bytesBuffer = bufferValue.getBuffer();
+                    VarInt.encode(bytesBuffer.remaining(), buffer);
+                    buffer.put(bytesBuffer); // zero-copy
+                } else {
+                    Value.BytesValue bytesValue = (Value.BytesValue) value;
+                    byte[] bytes = bytesValue.getValue();
+                    VarInt.encode(bytes.length, buffer);
+                    buffer.put(bytes);
+                }
                 break;
                 
             case STRING:
-                Value.StringValue stringValue = (Value.StringValue) value;
-                byte[] stringBytes = stringValue.getValue().getBytes(StandardCharsets.UTF_8);
-                VarInt.encode(stringBytes.length, buffer);
-                buffer.put(stringBytes);
+                if (value instanceof Value.StringBufferValue) {
+                    Value.StringBufferValue bufferValue = (Value.StringBufferValue) value;
+                    ByteBuffer stringBuffer = bufferValue.getBuffer();
+                    VarInt.encode(stringBuffer.remaining(), buffer);
+                    buffer.put(stringBuffer); // zero-copy
+                } else {
+                    Value.StringValue stringValue = (Value.StringValue) value;
+                    byte[] stringBytes = stringValue.getValue().getBytes(StandardCharsets.UTF_8);
+                    VarInt.encode(stringBytes.length, buffer);
+                    buffer.put(stringBytes);
+                }
                 break;
                 
             case ARRAY:

@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +51,16 @@ public abstract class Value {
         return new BytesValue(value);
     }
     
+    public static Value fromBytesBuffer(ByteBuffer value) {
+        return new BytesBufferValue(value);
+    }
+    
     public static Value fromString(String value) {
         return new StringValue(value);
+    }
+    
+    public static Value fromStringBuffer(ByteBuffer value) {
+        return new StringBufferValue(value);
     }
     
     public static Value fromArray(List<Value> value) {
@@ -187,8 +197,8 @@ public abstract class Value {
         }
     }
     
-    // Bytes Value
-    @EqualsAndHashCode(callSuper = false)
+    // Bytes Value (array-based)
+    @EqualsAndHashCode()
     public static class BytesValue extends Value {
         private final byte[] value;
         
@@ -222,7 +232,56 @@ public abstract class Value {
         }
     }
     
-    // String Value
+    // Bytes Value (ByteBuffer-based, zero-copy)
+    @EqualsAndHashCode(callSuper = false)
+    public static class BytesBufferValue extends Value {
+        private final ByteBuffer value;
+        
+        public BytesBufferValue(ByteBuffer value) {
+            this.value = value.asReadOnlyBuffer(); // zero-copy read-only view
+        }
+        
+        public byte[] getValue() { 
+            // Fallback to array when needed
+            byte[] array = new byte[value.remaining()];
+            value.duplicate().get(array);
+            return array;
+        }
+        
+        public ByteBuffer getBuffer() {
+            return value.duplicate(); // zero-copy view
+        }
+        
+        @Override
+        public TypeCode getTypeCode() { return TypeCode.BYTES; }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (obj instanceof BytesBufferValue) {
+                BytesBufferValue that = (BytesBufferValue) obj;
+                return value.equals(that.value);
+            }
+            if (obj instanceof BytesValue) {
+                BytesValue that = (BytesValue) obj;
+                return Arrays.equals(getValue(), that.getValue());
+            }
+            return false;
+        }
+        
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
+        
+        @Override
+        public String toString() {
+            return "bytes[" + value.remaining() + "]";
+        }
+    }
+    
+    // String Value (String-based)
     @Getter
     @EqualsAndHashCode(callSuper = false)
     public static class StringValue extends Value {
@@ -240,6 +299,62 @@ public abstract class Value {
         @Override
         public String toString() {
             return "\"" + value + "\"";
+        }
+    }
+    
+    // String Value (ByteBuffer-based, zero-copy)
+    @EqualsAndHashCode(callSuper = false)
+    public static class StringBufferValue extends Value {
+        private final ByteBuffer value;
+        private volatile String cachedString; // lazy decode
+        
+        public StringBufferValue(ByteBuffer value) {
+            this.value = value.asReadOnlyBuffer(); // zero-copy read-only view
+        }
+        
+        public String getValue() {
+            if (cachedString == null) {
+                synchronized (this) {
+                    if (cachedString == null) {
+                        byte[] array = new byte[value.remaining()];
+                        value.duplicate().get(array);
+                        cachedString = new String(array, StandardCharsets.UTF_8);
+                    }
+                }
+            }
+            return cachedString;
+        }
+        
+        public ByteBuffer getBuffer() {
+            return value.duplicate(); // zero-copy view
+        }
+        
+        @Override
+        public TypeCode getTypeCode() { return TypeCode.STRING; }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (obj instanceof StringBufferValue) {
+                StringBufferValue that = (StringBufferValue) obj;
+                return value.equals(that.value);
+            }
+            if (obj instanceof StringValue) {
+                StringValue that = (StringValue) obj;
+                return getValue().equals(that.getValue());
+            }
+            return false;
+        }
+        
+        @Override
+        public int hashCode() {
+            return getValue().hashCode(); // Use string hash for consistency
+        }
+        
+        @Override
+        public String toString() {
+            return "\"" + getValue() + "\"";
         }
     }
     

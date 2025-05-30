@@ -10,6 +10,17 @@ import static org.assertj.core.api.Assertions.*;
 
 class ImprintRecordTest {
     
+    // Helper method to extract string value from either StringValue or StringBufferValue
+    private String getStringValue(Value value) {
+        if (value instanceof Value.StringValue) {
+            return ((Value.StringValue) value).getValue();
+        } else if (value instanceof Value.StringBufferValue) {
+            return ((Value.StringBufferValue) value).getValue();
+        } else {
+            throw new IllegalArgumentException("Expected string value, got: " + value.getClass());
+        }
+    }
+    
     @Test
     void shouldCreateSimpleRecord() throws ImprintException {
         var schemaId = new SchemaId(1, 0xdeadbeef);
@@ -31,8 +42,9 @@ class ImprintRecordTest {
         assertThat(((Value.Int32Value) field1.get()).getValue()).isEqualTo(42);
         
         assertThat(field2).isPresent();
-        assertThat(field2.get()).isInstanceOf(Value.StringValue.class);
-        assertThat(((Value.StringValue) field2.get()).getValue()).isEqualTo("hello");
+        assertThat(field2.get().getTypeCode()).isEqualTo(com.imprint.types.TypeCode.STRING);
+        String stringValue = getStringValue(field2.get());
+        assertThat(stringValue).isEqualTo("hello");
         
         // Non-existent field should return empty
         assertThat(record.getValue(999)).isEmpty();
