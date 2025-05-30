@@ -7,25 +7,34 @@ import com.imprint.error.ErrorType;
  * Type codes for Imprint values.
  */
 public enum TypeCode {
-    NULL(0x0),
-    BOOL(0x1),
-    INT32(0x2),
-    INT64(0x3),
-    FLOAT32(0x4),
-    FLOAT64(0x5),
-    BYTES(0x6),
-    STRING(0x7),
-    ARRAY(0x8),
-    MAP(0x9),
-    ROW(0xA);
+    NULL(0x0, TypeHandler.NULL),
+    BOOL(0x1, TypeHandler.BOOL),
+    INT32(0x2, TypeHandler.INT32),
+    INT64(0x3, TypeHandler.INT64),
+    FLOAT32(0x4, TypeHandler.FLOAT32),
+    FLOAT64(0x5, TypeHandler.FLOAT64),
+    BYTES(0x6, TypeHandler.BYTES),
+    STRING(0x7, TypeHandler.STRING),
+    ARRAY(0x8, null), // TODO: implement
+    MAP(0x9, null),   // TODO: implement
+    ROW(0xA, null);   // TODO: implement
     
     private final byte code;
+    private final TypeHandler handler;
     
-    TypeCode(int code) {
+    TypeCode(int code, TypeHandler handler) {
         this.code = (byte) code;
+        this.handler = handler;
     }
     
     public byte getCode() { return code; }
+    
+    public TypeHandler getHandler() { 
+        if (handler == null) {
+            throw new UnsupportedOperationException("Handler not implemented for " + this);
+        }
+        return handler;
+    }
     
     public static TypeCode fromByte(byte code) throws ImprintException {
         for (TypeCode type : values()) {

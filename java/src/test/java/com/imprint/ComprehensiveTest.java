@@ -49,8 +49,8 @@ public class ComprehensiveTest {
         System.out.println("✓ VarInt functionality test passed");
     }
     
-    static void testValueTypes() throws ImprintException {
-        System.out.println("Testing Value types...");
+    static void testValueTypes() {
+        System.out.println("Testing Value types");
         
         // Test all value types
         Value nullVal = Value.nullValue();
@@ -73,7 +73,7 @@ public class ComprehensiveTest {
         assert stringVal.getTypeCode() == TypeCode.STRING;
         
         // Test value extraction
-        assert ((Value.BoolValue) boolVal).getValue() == true;
+        assert ((Value.BoolValue) boolVal).getValue();
         assert ((Value.Int32Value) int32Val).getValue() == 42;
         assert ((Value.Int64Value) int64Val).getValue() == 123456789L;
         assert ((Value.Float32Value) float32Val).getValue() == 3.14f;

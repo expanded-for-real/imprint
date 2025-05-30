@@ -75,38 +75,17 @@ public final class ImprintWriter {
      * @return estimated size in bytes including type-specific overhead
      */
     private int estimateValueSize(Value value) {
+        // Use TypeHandler for simple types
         switch (value.getTypeCode()) {
-            case NULL: return 0;
-
-            case BOOL: return 1;
-
+            case NULL:
+            case BOOL:
             case INT32:
-
-            case FLOAT32: return 4;
-
             case INT64:
-            case FLOAT64: return 8;
-
+            case FLOAT32:
+            case FLOAT64:
             case BYTES:
-                if (value instanceof Value.BytesBufferValue) {
-                    Value.BytesBufferValue bufferValue = (Value.BytesBufferValue) value;
-                    int length = bufferValue.getBuffer().remaining();
-                    return VarInt.encodedLength(length) + length;
-                } else {
-                    byte[] bytes = ((Value.BytesValue) value).getValue();
-                    return VarInt.encodedLength(bytes.length) + bytes.length;
-                }
-
             case STRING:
-                if (value instanceof Value.StringBufferValue) {
-                    Value.StringBufferValue bufferValue = (Value.StringBufferValue) value;
-                    int length = bufferValue.getBuffer().remaining();
-                    return VarInt.encodedLength(length) + length;
-                } else {
-                    String str = ((Value.StringValue) value).getValue();
-                    int utf8Length = str.getBytes(StandardCharsets.UTF_8).length;
-                    return VarInt.encodedLength(utf8Length) + utf8Length;
-                }
+                return value.getTypeCode().getHandler().estimateSize(value);
 
             case ARRAY:
                 List<Value> array = ((Value.ArrayValue) value).getValue();
@@ -155,59 +134,14 @@ public final class ImprintWriter {
     private void serializeValue(Value value, ByteBuffer buffer) throws ImprintException {
         switch (value.getTypeCode()) {
             case NULL:
-                break;
-                
             case BOOL:
-                Value.BoolValue boolValue = (Value.BoolValue) value;
-                buffer.put((byte) (boolValue.getValue() ? 1 : 0));
-                break;
-                
             case INT32:
-                Value.Int32Value int32Value = (Value.Int32Value) value;
-                buffer.putInt(int32Value.getValue());
-                break;
-                
             case INT64:
-                Value.Int64Value int64Value = (Value.Int64Value) value;
-                buffer.putLong(int64Value.getValue());
-                break;
-                
             case FLOAT32:
-                Value.Float32Value float32Value = (Value.Float32Value) value;
-                buffer.putFloat(float32Value.getValue());
-                break;
-                
             case FLOAT64:
-                Value.Float64Value float64Value = (Value.Float64Value) value;
-                buffer.putDouble(float64Value.getValue());
-                break;
-                
             case BYTES:
-                if (value instanceof Value.BytesBufferValue) {
-                    Value.BytesBufferValue bufferValue = (Value.BytesBufferValue) value;
-                    ByteBuffer bytesBuffer = bufferValue.getBuffer();
-                    VarInt.encode(bytesBuffer.remaining(), buffer);
-                    buffer.put(bytesBuffer); // zero-copy
-                } else {
-                    Value.BytesValue bytesValue = (Value.BytesValue) value;
-                    byte[] bytes = bytesValue.getValue();
-                    VarInt.encode(bytes.length, buffer);
-                    buffer.put(bytes);
-                }
-                break;
-                
             case STRING:
-                if (value instanceof Value.StringBufferValue) {
-                    Value.StringBufferValue bufferValue = (Value.StringBufferValue) value;
-                    var stringBuffer = bufferValue.getBuffer();
-                    VarInt.encode(stringBuffer.remaining(), buffer);
-                    buffer.put(stringBuffer); // zero-copy
-                } else {
-                    Value.StringValue stringValue = (Value.StringValue) value;
-                    byte[] stringBytes = stringValue.getValue().getBytes(StandardCharsets.UTF_8);
-                    VarInt.encode(stringBytes.length, buffer);
-                    buffer.put(stringBytes);
-                }
+                value.getTypeCode().getHandler().serialize(value, buffer);
                 break;
                 
             case ARRAY:

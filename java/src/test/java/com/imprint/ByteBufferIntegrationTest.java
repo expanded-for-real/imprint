@@ -50,11 +50,11 @@ public class ByteBufferIntegrationTest {
         assert rawBytes.isPresent() : "Raw bytes should be present for field 1";
         assert rawBytes.get().isReadOnly() : "Raw bytes buffer should be read-only";
         
-        System.out.println("✓ ByteBuffer functionality test passed");
+        System.out.println("ByteBuffer functionality test passed");
     }
     
-    static void testZeroCopyBenefits() {
-        System.out.println("Testing zero-copy benefits...");
+    static void testZeroCopy() {
+        System.out.println("Testing zero-copy");
         
         // Create a large payload to demonstrate zero-copy benefits
         byte[] largePayload = new byte[1024 * 1024]; // 1MB
