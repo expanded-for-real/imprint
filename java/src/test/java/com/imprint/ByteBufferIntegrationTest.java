@@ -14,7 +14,7 @@ public class ByteBufferIntegrationTest {
     public static void main(String[] args) {
         try {
             testByteBufferFunctionality();
-            testZeroCopyBenefits();
+            testZeroCopy();
             System.out.println("All ByteBuffer integration tests passed!");
         } catch (Exception e) {
             System.err.println("ByteBuffer integration test failed: " + e.getMessage());
