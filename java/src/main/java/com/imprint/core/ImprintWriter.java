@@ -42,7 +42,7 @@ public final class ImprintWriter {
         
         for (var entry : fields.entrySet()) {
             int fieldId = entry.getKey();
-            Value value = entry.getValue();
+            var value = entry.getValue();
             
             directory.add(new DirectoryEntry(fieldId, value.getTypeCode(), payloadBuffer.position()));
             serializeValue(value, payloadBuffer);
@@ -199,7 +199,7 @@ public final class ImprintWriter {
             case STRING:
                 if (value instanceof Value.StringBufferValue) {
                     Value.StringBufferValue bufferValue = (Value.StringBufferValue) value;
-                    ByteBuffer stringBuffer = bufferValue.getBuffer();
+                    var stringBuffer = bufferValue.getBuffer();
                     VarInt.encode(stringBuffer.remaining(), buffer);
                     buffer.put(stringBuffer); // zero-copy
                 } else {
@@ -220,7 +220,7 @@ public final class ImprintWriter {
                 
             case ROW:
                 Value.RowValue rowValue = (Value.RowValue) value;
-                ByteBuffer serializedRow = rowValue.getValue().serializeToBuffer();
+                var serializedRow = rowValue.getValue().serializeToBuffer();
                 buffer.put(serializedRow);
                 break;
                 

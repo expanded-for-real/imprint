@@ -268,7 +268,7 @@ public final class ImprintRecord {
                 if (buffer.remaining() < length) {
                     throw new ImprintException(ErrorType.BUFFER_UNDERFLOW, "Not enough bytes for bytes value");
                 }
-                ByteBuffer bytesView = buffer.slice();
+                var bytesView = buffer.slice();
                 bytesView.limit(length);
                 buffer.position(buffer.position() + length);
                 return Value.fromBytesBuffer(bytesView.asReadOnlyBuffer());
@@ -279,7 +279,7 @@ public final class ImprintRecord {
                 if (buffer.remaining() < strLength) {
                     throw new ImprintException(ErrorType.BUFFER_UNDERFLOW, "Not enough bytes for string value");
                 }
-                ByteBuffer stringBytesView = buffer.slice();
+                var stringBytesView = buffer.slice();
                 stringBytesView.limit(strLength);
                 buffer.position(buffer.position() + strLength);
                 try {
@@ -296,7 +296,7 @@ public final class ImprintRecord {
 
             case ROW:
                 var remainingBuffer = buffer.slice();
-                ImprintRecord nestedRecord = deserialize(remainingBuffer);
+                var nestedRecord = deserialize(remainingBuffer);
                 return Value.fromRow(nestedRecord);
 
             default:
@@ -316,7 +316,6 @@ public final class ImprintRecord {
         var elements = new ArrayList<Value>(length);
         
         for (int i = 0; i < length; i++) {
-            // For each element, we need to determine how many bytes to read
             var elementBytes = readValueBytes(elementType, buffer);
             var element = deserializeValue(elementType, elementBytes);
             elements.add(element);
@@ -393,10 +392,10 @@ public final class ImprintRecord {
             case ARRAY:
             case MAP:
             case ROW:
-                // For complex types, return the entire remaining buffer
-                // The specific deserializer will handle parsing
+                // For complex types, return the entire remaining buffer for now
+                // The specific deserializer will handle parsing in the future
                 var remainingBuffer = buffer.slice();
-                buffer.position(buffer.limit()); // consume all remaining
+                buffer.position(buffer.limit());
                 return remainingBuffer.asReadOnlyBuffer();
 
             default:
