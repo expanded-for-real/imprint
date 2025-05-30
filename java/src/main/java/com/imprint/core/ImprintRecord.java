@@ -34,8 +34,8 @@ public final class ImprintRecord {
      * Get a value by field ID, deserializing it on demand.
      */
     public Optional<Value> getValue(int fieldId) throws ImprintException {
-        // Binary search for the field ID
-        int index = Collections.binarySearch(directory, new DirectoryEntry(fieldId, TypeCode.NULL, 0), Comparator.comparingInt(DirectoryEntry::getId));
+        // Binary search for the field ID without allocation
+        int index = findDirectoryIndex(fieldId);
         if (index < 0) return Optional.empty();
         
         var entry = directory.get(index);
@@ -54,7 +54,7 @@ public final class ImprintRecord {
      * Returns a zero-copy ByteBuffer view.
      */
     public Optional<ByteBuffer> getRawBytes(int fieldId) {
-        int index = Collections.binarySearch(directory, new DirectoryEntry(fieldId, TypeCode.NULL, 0), Comparator.comparingInt(DirectoryEntry::getId));
+        int index = findDirectoryIndex(fieldId);
         if (index < 0) return Optional.empty();
 
         var entry = directory.get(index);
@@ -127,6 +127,32 @@ public final class ImprintRecord {
         buffer.position(buffer.position() + header.getPayloadSize());
         
         return new ImprintRecord(header, directory, payload);
+    }
+    
+    /**
+     * Binary search for field ID in directory without object allocation.
+     * Returns the index of the field if found, or a negative value if not found.
+     * 
+     * @param fieldId the field ID to search for
+     * @return index if found, or negative insertion point - 1 if not found
+     */
+    private int findDirectoryIndex(int fieldId) {
+        int low = 0;
+        int high = directory.size() - 1;
+        
+        while (low <= high) {
+            int mid = (low + high) >>> 1; // unsigned right shift to avoid overflow
+            int midFieldId = directory.get(mid).getId();
+            
+            if (midFieldId < fieldId) {
+                low = mid + 1;
+            } else if (midFieldId > fieldId) {
+                high = mid - 1;
+            } else {
+                return mid; // field found
+            }
+        }
+        return -(low + 1); // field not found, return insertion point
     }
     
     private int estimateSerializedSize() {

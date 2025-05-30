@@ -66,6 +66,14 @@ public final class ImprintWriter {
         return Math.max(estimatedSize + (estimatedSize / 4), fields.size() * 16);
     }
     
+    /**
+     * Estimates the serialized size in bytes for a given value.
+     * This method provides size estimates for payload buffer allocation,
+     * supporting both array-based and ByteBuffer-based value types.
+     * 
+     * @param value the value to estimate size for
+     * @return estimated size in bytes including type-specific overhead
+     */
     private int estimateValueSize(Value value) {
         switch (value.getTypeCode()) {
             case NULL: return 0;
