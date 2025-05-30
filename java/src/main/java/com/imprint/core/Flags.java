@@ -16,11 +16,7 @@ public final class Flags {
     public Flags(byte value) {
         this.value = value;
     }
-    
-    public Flags(int value) {
-        this.value = (byte) value;
-    }
-    
+
     public boolean hasFieldDirectory() {
         return (value & FIELD_DIRECTORY) != 0;
     }

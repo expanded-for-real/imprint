@@ -3,7 +3,6 @@ package com.imprint.types;
 import com.imprint.core.ImprintRecord;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -77,7 +76,6 @@ public abstract class Value {
     
     // Null Value
     @EqualsAndHashCode(callSuper = false)
-    @ToString
     public static class NullValue extends Value {
         public static final NullValue INSTANCE = new NullValue();
         
@@ -122,9 +120,7 @@ public abstract class Value {
         public Int32Value(int value) {
             this.value = value;
         }
-        
-        public int getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.INT32; }
         
@@ -143,9 +139,7 @@ public abstract class Value {
         public Int64Value(long value) {
             this.value = value;
         }
-        
-        public long getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.INT64; }
         
@@ -164,9 +158,7 @@ public abstract class Value {
         public Float32Value(float value) {
             this.value = value;
         }
-        
-        public float getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.FLOAT32; }
         
@@ -185,9 +177,7 @@ public abstract class Value {
         public Float64Value(double value) {
             this.value = value;
         }
-        
-        public double getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.FLOAT64; }
         
@@ -198,7 +188,6 @@ public abstract class Value {
     }
     
     // Bytes Value (array-based)
-    @EqualsAndHashCode()
     public static class BytesValue extends Value {
         private final byte[] value;
         
@@ -233,7 +222,6 @@ public abstract class Value {
     }
     
     // Bytes Value (ByteBuffer-based, zero-copy)
-    @EqualsAndHashCode(callSuper = false)
     public static class BytesBufferValue extends Value {
         private final ByteBuffer value;
         
@@ -290,9 +278,7 @@ public abstract class Value {
         public StringValue(String value) {
             this.value = Objects.requireNonNull(value, "String cannot be null");
         }
-        
-        public String getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.STRING; }
         
@@ -303,7 +289,6 @@ public abstract class Value {
     }
     
     // String Value (ByteBuffer-based, zero-copy)
-    @EqualsAndHashCode(callSuper = false)
     public static class StringBufferValue extends Value {
         private final ByteBuffer value;
         private volatile String cachedString; // lazy decode
@@ -367,9 +352,7 @@ public abstract class Value {
         public ArrayValue(List<Value> value) {
             this.value = List.copyOf(Objects.requireNonNull(value, "Array cannot be null"));
         }
-        
-        public List<Value> getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.ARRAY; }
         
@@ -388,9 +371,7 @@ public abstract class Value {
         public MapValue(Map<MapKey, Value> value) {
             this.value = Map.copyOf(Objects.requireNonNull(value, "Map cannot be null"));
         }
-        
-        public Map<MapKey, Value> getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.MAP; }
         
@@ -409,9 +390,7 @@ public abstract class Value {
         public RowValue(ImprintRecord value) {
             this.value = Objects.requireNonNull(value, "Record cannot be null");
         }
-        
-        public ImprintRecord getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.ROW; }
         

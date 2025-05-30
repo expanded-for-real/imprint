@@ -75,16 +75,14 @@ public abstract class MapKey {
     }
     
     @Getter
-    @EqualsAndHashCode()
+    @EqualsAndHashCode(callSuper = false)
     public static class Int32Key extends MapKey {
         private final int value;
         
         public Int32Key(int value) {
             this.value = value;
         }
-        
-        public int getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.INT32; }
         
@@ -95,16 +93,14 @@ public abstract class MapKey {
     }
     
     @Getter
-    @EqualsAndHashCode()
+    @EqualsAndHashCode(callSuper = false)
     public static class Int64Key extends MapKey {
         private final long value;
         
         public Int64Key(long value) {
             this.value = value;
         }
-        
-        public long getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.INT64; }
         
@@ -114,7 +110,6 @@ public abstract class MapKey {
         }
     }
     
-    @EqualsAndHashCode()
     public static class BytesKey extends MapKey {
         private final byte[] value;
         
@@ -149,16 +144,14 @@ public abstract class MapKey {
     }
     
     @Getter
-    @EqualsAndHashCode()
+    @EqualsAndHashCode(callSuper = false)
     public static class StringKey extends MapKey {
         private final String value;
         
         public StringKey(String value) {
             this.value = Objects.requireNonNull(value, "String cannot be null");
         }
-        
-        public String getValue() { return value; }
-        
+
         @Override
         public TypeCode getTypeCode() { return TypeCode.STRING; }
         

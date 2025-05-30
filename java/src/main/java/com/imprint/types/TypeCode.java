@@ -2,6 +2,7 @@ package com.imprint.types;
 
 import com.imprint.error.ImprintException;
 import com.imprint.error.ErrorType;
+import lombok.Getter;
 
 /**
  * Type codes for Imprint values.
@@ -19,6 +20,7 @@ public enum TypeCode {
     MAP(0x9, null),   // TODO: implement
     ROW(0xA, null);   // TODO: implement
     
+    @Getter
     private final byte code;
     private final TypeHandler handler;
     
@@ -26,10 +28,8 @@ public enum TypeCode {
         this.code = (byte) code;
         this.handler = handler;
     }
-    
-    public byte getCode() { return code; }
-    
-    public TypeHandler getHandler() { 
+
+    public TypeHandler getHandler() {
         if (handler == null) {
             throw new UnsupportedOperationException("Handler not implemented for " + this);
         }
@@ -44,9 +44,5 @@ public enum TypeCode {
         }
         throw new ImprintException(ErrorType.INVALID_TYPE_CODE, 
                                  "Unknown type code: 0x" + Integer.toHexString(code & 0xFF));
-    }
-    
-    public static TypeCode fromInt(int code) throws ImprintException {
-        return fromByte((byte) code);
     }
 }

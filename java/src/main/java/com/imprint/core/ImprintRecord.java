@@ -2,16 +2,16 @@
 package com.imprint.core;
 
 import com.imprint.Constants;
-import com.imprint.error.ImprintException;
 import com.imprint.error.ErrorType;
+import com.imprint.error.ImprintException;
+import com.imprint.types.MapKey;
 import com.imprint.types.TypeCode;
 import com.imprint.types.Value;
-import com.imprint.types.MapKey;
 import com.imprint.util.VarInt;
 import lombok.Getter;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -70,7 +70,7 @@ public final class ImprintRecord {
     /**
      * Serialize this record to a ByteBuffer (zero-copy when possible).
      */
-    public ByteBuffer serializeToBuffer() throws ImprintException {
+    public ByteBuffer serializeToBuffer() {
         var buffer = ByteBuffer.allocate(estimateSerializedSize());
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         
