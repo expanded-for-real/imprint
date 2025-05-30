@@ -55,7 +55,9 @@ class ImprintRecordTest {
         var original = writer.build();
         
         // Serialize and deserialize
-        byte[] serialized = original.serialize();
+        var buffer = original.serializeToBuffer();
+        byte[] serialized = new byte[buffer.remaining()];
+        buffer.get(serialized);
         var deserialized = ImprintRecord.deserialize(serialized);
         
         // Verify metadata
@@ -93,7 +95,9 @@ class ImprintRecordTest {
         ImprintRecord record = writer.build();
         
         // Serialize and deserialize
-        byte[] serialized = record.serialize();
+        var buffer = record.serializeToBuffer();
+        byte[] serialized = new byte[buffer.remaining()];
+        buffer.get(serialized);
         var deserialized = ImprintRecord.deserialize(serialized);
         
         Optional<Value> arrayValue = deserialized.getValue(1);
@@ -120,7 +124,9 @@ class ImprintRecordTest {
         var record = writer.build();
         
         // Serialize and deserialize
-        byte[] serialized = record.serialize();
+        var buffer = record.serializeToBuffer();
+        byte[] serialized = new byte[buffer.remaining()];
+        buffer.get(serialized);
         var deserialized = ImprintRecord.deserialize(serialized);
         
         Optional<Value> mapValue = deserialized.getValue(1);
@@ -150,7 +156,9 @@ class ImprintRecordTest {
         var outerRecord = outerWriter.build();
         
         // Serialize and deserialize
-        byte[] serialized = outerRecord.serialize();
+        var buffer = outerRecord.serializeToBuffer();
+        byte[] serialized = new byte[buffer.remaining()];
+        buffer.get(serialized);
         var deserialized = ImprintRecord.deserialize(serialized);
         
         // Verify outer record metadata

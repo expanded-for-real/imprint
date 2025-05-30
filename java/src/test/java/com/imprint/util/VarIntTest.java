@@ -16,23 +16,43 @@ class VarIntTest {
         };
         
         for (int value : testCases) {
-            byte[] encoded = VarInt.encode(value);
-            VarInt.DecodeResult result = VarInt.decode(encoded);
+            ByteBuffer buffer = ByteBuffer.allocate(10);
+            VarInt.encode(value, buffer);
+            int encodedLength = buffer.position();
+            
+            buffer.flip();
+            VarInt.DecodeResult result = VarInt.decode(buffer);
             
             assertThat(result.getValue()).isEqualTo(value);
-            assertThat(result.getBytesRead()).isEqualTo(encoded.length);
+            assertThat(result.getBytesRead()).isEqualTo(encodedLength);
         }
     }
     
     @Test
     void shouldEncodeKnownValuesCorrectly() {
         // Test cases with known encodings
-        assertThat(VarInt.encode(0)).containsExactly(0x00);
-        assertThat(VarInt.encode(1)).containsExactly(0x01);
-        assertThat(VarInt.encode(127)).containsExactly(0x7f);
-        assertThat(VarInt.encode(128)).containsExactly(0x80, 0x01);
-        assertThat(VarInt.encode(16383)).containsExactly(0xff, 0x7f);
-        assertThat(VarInt.encode(16384)).containsExactly(0x80, 0x80, 0x01);
+        assertEncodedBytes(0, 0x00);
+        assertEncodedBytes(1, 0x01);
+        assertEncodedBytes(127, 0x7f);
+        assertEncodedBytes(128, 0x80, 0x01);
+        assertEncodedBytes(16383, 0xff, 0x7f);
+        assertEncodedBytes(16384, 0x80, 0x80, 0x01);
+    }
+    
+    private void assertEncodedBytes(int value, int... expectedBytes) {
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+        VarInt.encode(value, buffer);
+        buffer.flip();
+        
+        byte[] actual = new byte[buffer.remaining()];
+        buffer.get(actual);
+        
+        byte[] expected = new byte[expectedBytes.length];
+        for (int i = 0; i < expectedBytes.length; i++) {
+            expected[i] = (byte) expectedBytes[i];
+        }
+        
+        assertThat(actual).containsExactly(expected);
     }
     
     @Test
@@ -59,9 +79,11 @@ class VarIntTest {
     
     @Test
     void shouldHandleBufferUnderflow() {
-        byte[] truncated = {(byte) 0x80}; // incomplete varint
+        ByteBuffer buffer = ByteBuffer.allocate(1);
+        buffer.put((byte) 0x80); // incomplete varint
+        buffer.flip();
         
-        assertThatThrownBy(() -> VarInt.decode(truncated))
+        assertThatThrownBy(() -> VarInt.decode(buffer))
             .isInstanceOf(ImprintException.class)
             .extracting("errorType")
             .isEqualTo(ErrorType.BUFFER_UNDERFLOW);
@@ -69,9 +91,11 @@ class VarIntTest {
     
     @Test
     void shouldHandleOverlongEncoding() {
-        byte[] overlong = {(byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, 0x01};
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+        buffer.put(new byte[]{(byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, 0x01});
+        buffer.flip();
         
-        assertThatThrownBy(() -> VarInt.decode(overlong))
+        assertThatThrownBy(() -> VarInt.decode(buffer))
             .isInstanceOf(ImprintException.class)
             .extracting("errorType")
             .isEqualTo(ErrorType.MALFORMED_VARINT);
@@ -79,9 +103,11 @@ class VarIntTest {
     
     @Test
     void shouldHandleOverflow() {
-        byte[] overflow = {(byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, 0x10};
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+        buffer.put(new byte[]{(byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80, 0x10});
+        buffer.flip();
         
-        assertThatThrownBy(() -> VarInt.decode(overflow))
+        assertThatThrownBy(() -> VarInt.decode(buffer))
             .isInstanceOf(ImprintException.class)
             .extracting("errorType")
             .isEqualTo(ErrorType.MALFORMED_VARINT);

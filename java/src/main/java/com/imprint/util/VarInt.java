@@ -20,32 +20,6 @@ public final class VarInt {
     
     private VarInt() {} // utility class
     
-    /**
-     * Encode a 32-bit unsigned integer as a VarInt.
-     * @param value the value to encode (treated as unsigned)
-     * @return the encoded bytes
-     */
-    public static byte[] encode(int value) {
-        // Convert to unsigned long for proper bit manipulation
-        long val = Integer.toUnsignedLong(value);
-        byte[] result = new byte[MAX_VARINT_LEN];
-        int pos = 0;
-        
-        // Encode at least one byte, then continue while value has more bits
-        do {
-            byte b = (byte) (val & SEGMENT_BITS);
-            val >>>= 7;
-            if (val != 0) {
-                b |= CONTINUATION_BIT;
-            }
-            result[pos++] = b;
-        } while (val != 0);
-        
-        // Return only the bytes we actually used
-        byte[] trimmed = new byte[pos];
-        System.arraycopy(result, 0, trimmed, 0, pos);
-        return trimmed;
-    }
     
     /**
      * Encode a 32-bit unsigned integer as a VarInt into the given ByteBuffer.
@@ -67,64 +41,6 @@ public final class VarInt {
         } while (val != 0);
     }
     
-    /**
-     * Decode a VarInt from a byte array.
-     * @param bytes the bytes to decode from
-     * @return a DecodeResult containing the decoded value and number of bytes consumed
-     * @throws ImprintException if the VarInt is malformed
-     */
-    public static DecodeResult decode(byte[] bytes) throws ImprintException {
-        return decode(bytes, 0);
-    }
-    
-    /**
-     * Decode a VarInt from a byte array starting at the given offset.
-     * @param bytes the bytes to decode from
-     * @param offset the starting offset
-     * @return a DecodeResult containing the decoded value and number of bytes consumed
-     * @throws ImprintException if the VarInt is malformed
-     */
-    public static DecodeResult decode(byte[] bytes, int offset) throws ImprintException {
-        if (bytes == null) {
-            throw new ImprintException(ErrorType.BUFFER_UNDERFLOW, "Cannot decode from null array");
-        }
-        
-        long result = 0;
-        int shift = 0;
-        int bytesRead = 0;
-        int pos = offset;
-        
-        while (true) {
-            if (bytesRead >= MAX_VARINT_LEN) {
-                throw new ImprintException(ErrorType.MALFORMED_VARINT, "VarInt too long");
-            }
-            if (pos >= bytes.length) {
-                throw new ImprintException(ErrorType.BUFFER_UNDERFLOW, 
-                    "Unexpected end of data while reading VarInt");
-            }
-            
-            byte b = bytes[pos++];
-            bytesRead++;
-            
-            // Check if adding these 7 bits would overflow
-            long segment = b & SEGMENT_BITS;
-            if (shift >= 32 || (shift == 28 && segment > 0xF)) {
-                throw new ImprintException(ErrorType.MALFORMED_VARINT, "VarInt overflow");
-            }
-            
-            // Add the bottom 7 bits to the result
-            result |= segment << shift;
-            
-            // If the high bit is not set, this is the last byte
-            if ((b & CONTINUATION_BIT) == 0) {
-                break;
-            }
-            
-            shift += 7;
-        }
-        
-        return new DecodeResult((int) result, bytesRead);
-    }
     
     /**
      * Decode a VarInt from a ByteBuffer.

@@ -35,11 +35,15 @@ public class ComprehensiveTest {
         int[] testValues = {0, 1, 127, 128, 16383, 16384, Integer.MAX_VALUE};
         
         for (int value : testValues) {
-            byte[] encoded = VarInt.encode(value);
-            VarInt.DecodeResult result = VarInt.decode(encoded);
+            ByteBuffer buffer = ByteBuffer.allocate(10);
+            VarInt.encode(value, buffer);
+            int encodedLength = buffer.position();
+            
+            buffer.flip();
+            VarInt.DecodeResult result = VarInt.decode(buffer);
             
             assert result.getValue() == value : "VarInt roundtrip failed for " + value;
-            assert result.getBytesRead() == encoded.length : "Bytes read mismatch for " + value;
+            assert result.getBytesRead() == encodedLength : "Bytes read mismatch for " + value;
         }
         
         System.out.println("✓ VarInt functionality test passed");

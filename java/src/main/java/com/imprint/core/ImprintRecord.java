@@ -29,22 +29,7 @@ public final class ImprintRecord {
         this.directory = List.copyOf(Objects.requireNonNull(directory, "Directory cannot be null"));
         this.payload = payload.asReadOnlyBuffer(); // Zero-copy read-only view
     }
-    
-    // Convenience constructor for byte array (creates ByteBuffer)
-    public ImprintRecord(Header header, List<DirectoryEntry> directory, byte[] payloadBytes) {
-        this(header, directory, ByteBuffer.wrap(payloadBytes).asReadOnlyBuffer());
-    }
-    
-    public ByteBuffer getPayload() { 
-        return payload.asReadOnlyBuffer(); // Zero-copy read-only view
-    }
-    
-    public byte[] getPayloadBytes() {
-        byte[] bytes = new byte[payload.remaining()];
-        payload.duplicate().get(bytes);
-        return bytes;
-    }
-    
+
     /**
      * Get a value by field ID, deserializing it on demand.
      */
@@ -80,27 +65,6 @@ public final class ImprintRecord {
         ByteBuffer fieldBuffer = payload.duplicate();
         fieldBuffer.position(startOffset).limit(endOffset);
         return Optional.of(fieldBuffer.slice().asReadOnlyBuffer());
-    }
-    
-    /**
-     * Get the raw bytes for a field as a byte array (for compatibility).
-     */
-    public Optional<byte[]> getRawBytesArray(int fieldId) {
-        return getRawBytes(fieldId).map(buffer -> {
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.duplicate().get(bytes);
-            return bytes;
-        });
-    }
-    
-    /**
-     * Serialize this record to bytes.
-     */
-    public byte[] serialize() throws ImprintException {
-        var serialized = serializeToBuffer();
-        byte[] result = new byte[serialized.remaining()];
-        serialized.get(result);
-        return result;
     }
     
     /**

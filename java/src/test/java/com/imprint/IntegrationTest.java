@@ -45,7 +45,9 @@ public class IntegrationTest {
         assert record.getValue(999).isEmpty(); // non-existent field
         
         // Test serialization round-trip
-        byte[] serialized = record.serialize();
+        var buffer = record.serializeToBuffer();
+        byte[] serialized = new byte[buffer.remaining()];
+        buffer.get(serialized);
         ImprintRecord deserialized = ImprintRecord.deserialize(serialized);
         
         assert deserialized.getValue(1).get().equals(Value.fromInt32(42));
@@ -79,7 +81,9 @@ public class IntegrationTest {
         ImprintRecord record = writer.build();
         
         // Test serialization round-trip
-        byte[] serialized = record.serialize();
+        var buffer = record.serializeToBuffer();
+        byte[] serialized = new byte[buffer.remaining()];
+        buffer.get(serialized);
         ImprintRecord deserialized = ImprintRecord.deserialize(serialized);
         
         // Verify array
@@ -117,7 +121,9 @@ public class IntegrationTest {
         ImprintRecord outerRecord = outerWriter.build();
         
         // Test serialization round-trip
-        byte[] serialized = outerRecord.serialize();
+        var buffer = outerRecord.serializeToBuffer();
+        byte[] serialized = new byte[buffer.remaining()];
+        buffer.get(serialized);
         ImprintRecord deserialized = ImprintRecord.deserialize(serialized);
         
         // Verify outer record

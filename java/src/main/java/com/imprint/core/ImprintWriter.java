@@ -186,7 +186,7 @@ public final class ImprintWriter {
                 
             case ROW:
                 Value.RowValue rowValue = (Value.RowValue) value;
-                byte[] serializedRow = rowValue.getValue().serialize();
+                ByteBuffer serializedRow = rowValue.getValue().serializeToBuffer();
                 buffer.put(serializedRow);
                 break;
                 

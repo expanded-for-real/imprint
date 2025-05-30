@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
- * Schema identifier containing fieldspace ID and schema hash.
+ * Schema identifier containing field-space ID and schema hash.
  */
 @Getter
 @AllArgsConstructor
