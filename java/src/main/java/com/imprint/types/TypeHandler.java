@@ -197,17 +197,17 @@ public interface TypeHandler {
             if (buffer.remaining() < length) {
                 throw new ImprintException(com.imprint.error.ErrorType.BUFFER_UNDERFLOW, "Not enough bytes for bytes value");
             }
-            ByteBuffer bytesView = buffer.slice();
+            var bytesView = buffer.slice();
             bytesView.limit(length);
             buffer.position(buffer.position() + length);
             return Value.fromBytesBuffer(bytesView.asReadOnlyBuffer());
         }
         
         @Override
-        public void serialize(Value value, ByteBuffer buffer) throws ImprintException {
+        public void serialize(Value value, ByteBuffer buffer) {
             if (value instanceof Value.BytesBufferValue) {
                 Value.BytesBufferValue bufferValue = (Value.BytesBufferValue) value;
-                ByteBuffer bytesBuffer = bufferValue.getBuffer();
+                var bytesBuffer = bufferValue.getBuffer();
                 VarInt.encode(bytesBuffer.remaining(), buffer);
                 buffer.put(bytesBuffer);
             } else {
@@ -234,8 +234,7 @@ public interface TypeHandler {
         public ByteBuffer readValueBytes(ByteBuffer buffer) throws ImprintException {
             int originalPosition = buffer.position();
             VarInt.DecodeResult lengthResult = VarInt.decode(buffer);
-            int length = lengthResult.getValue();
-            int totalLength = lengthResult.getBytesRead() + length;
+            int totalLength = lengthResult.getBytesRead() + lengthResult.getValue();
             buffer.position(originalPosition);
             var valueBuffer = buffer.slice();
             valueBuffer.limit(totalLength);
@@ -252,7 +251,7 @@ public interface TypeHandler {
             if (buffer.remaining() < strLength) {
                 throw new ImprintException(com.imprint.error.ErrorType.BUFFER_UNDERFLOW, "Not enough bytes for string value");
             }
-            ByteBuffer stringBytesView = buffer.slice();
+            var stringBytesView = buffer.slice();
             stringBytesView.limit(strLength);
             buffer.position(buffer.position() + strLength);
             try {
@@ -266,7 +265,7 @@ public interface TypeHandler {
         public void serialize(Value value, ByteBuffer buffer) {
             if (value instanceof Value.StringBufferValue) {
                 Value.StringBufferValue bufferValue = (Value.StringBufferValue) value;
-                ByteBuffer stringBuffer = bufferValue.getBuffer();
+                var stringBuffer = bufferValue.getBuffer();
                 VarInt.encode(stringBuffer.remaining(), buffer);
                 buffer.put(stringBuffer);
             } else {
@@ -294,8 +293,7 @@ public interface TypeHandler {
         public ByteBuffer readValueBytes(ByteBuffer buffer) throws ImprintException {
             int originalPosition = buffer.position();
             VarInt.DecodeResult lengthResult = VarInt.decode(buffer);
-            int length = lengthResult.getValue();
-            int totalLength = lengthResult.getBytesRead() + length;
+            int totalLength = lengthResult.getBytesRead() + lengthResult.getValue();
             buffer.position(originalPosition);
             var valueBuffer = buffer.slice();
             valueBuffer.limit(totalLength);

@@ -301,7 +301,7 @@ public abstract class Value {
             if (cachedString == null) {
                 synchronized (this) {
                     if (cachedString == null) {
-                        byte[] array = new byte[value.remaining()];
+                        var array = new byte[value.remaining()];
                         value.duplicate().get(array);
                         cachedString = new String(array, StandardCharsets.UTF_8);
                     }
