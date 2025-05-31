@@ -95,6 +95,27 @@ public final class ImprintRecord {
     }
     
     /**
+     * Create a fluent builder for constructing ImprintRecord instances.
+     * 
+     * @param schemaId the schema identifier for this record
+     * @return a new builder instance
+     */
+    public static ImprintRecordBuilder builder(SchemaId schemaId) {
+        return new ImprintRecordBuilder(schemaId);
+    }
+    
+    /**
+     * Create a fluent builder for constructing ImprintRecord instances.
+     * 
+     * @param fieldspaceId the fieldspace identifier
+     * @param schemaHash the schema hash
+     * @return a new builder instance
+     */
+    public static ImprintRecordBuilder builder(int fieldspaceId, int schemaHash) {
+        return new ImprintRecordBuilder(new SchemaId(fieldspaceId, schemaHash));
+    }
+    
+    /**
      * Deserialize a record from bytes.
      */
     public static ImprintRecord deserialize(byte[] bytes) throws ImprintException {
