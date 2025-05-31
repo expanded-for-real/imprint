@@ -52,7 +52,7 @@ public final class ImprintWriter {
         payloadBuffer.flip(); // limit = position, position = 0
         var payloadView = payloadBuffer.slice().asReadOnlyBuffer();
         
-        var header = new Header(new Flags(Flags.FIELD_DIRECTORY), schemaId, payloadView.remaining());
+        var header = new Header(new Flags((byte) 0), schemaId, payloadView.remaining());
         return new ImprintRecord(header, directory, payloadView);
     }
     

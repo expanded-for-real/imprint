@@ -75,7 +75,6 @@ class ImprintRecordTest {
         // Verify metadata
         assertThat(deserialized.getHeader().getSchemaId().getFieldspaceId()).isEqualTo(1);
         assertThat(deserialized.getHeader().getSchemaId().getSchemaHash()).isEqualTo(0xdeadbeef);
-        assertThat(deserialized.getHeader().getFlags().hasFieldDirectory()).isTrue();
         assertThat(deserialized.getDirectory()).hasSize(8);
         
         // Verify all values

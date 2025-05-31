@@ -77,12 +77,10 @@ public final class ImprintRecord {
         // Write header
         serializeHeader(buffer);
         
-        // Write directory if present
-        if (header.getFlags().hasFieldDirectory()) {
-            VarInt.encode(directory.size(), buffer);
-            for (var entry : directory) {
-                serializeDirectoryEntry(entry, buffer);
-            }
+        // Write directory (always present)
+        VarInt.encode(directory.size(), buffer);
+        for (var entry : directory) {
+            serializeDirectoryEntry(entry, buffer);
         }
         
         // Write payload (shallow copy only)
@@ -131,15 +129,13 @@ public final class ImprintRecord {
         // Read header
         var header = deserializeHeader(buffer);
         
-        // Read directory if present
+        // Read directory (always present)
         var directory = new ArrayList<DirectoryEntry>();
-        if (header.getFlags().hasFieldDirectory()) {
-            VarInt.DecodeResult countResult = VarInt.decode(buffer);
-            int directoryCount = countResult.getValue();
-            
-            for (int i = 0; i < directoryCount; i++) {
-                directory.add(deserializeDirectoryEntry(buffer));
-            }
+        VarInt.DecodeResult countResult = VarInt.decode(buffer);
+        int directoryCount = countResult.getValue();
+        
+        for (int i = 0; i < directoryCount; i++) {
+            directory.add(deserializeDirectoryEntry(buffer));
         }
         
         // Read payload as ByteBuffer slice for zero-copy
@@ -178,12 +174,8 @@ public final class ImprintRecord {
     
     private int estimateSerializedSize() {
         int size = Constants.HEADER_BYTES; // header
-        
-        if (header.getFlags().hasFieldDirectory()) {
-            size += VarInt.encodedLength(directory.size()); // directory count
-            size += directory.size() * Constants.DIR_ENTRY_BYTES; // directory entries
-        }
-        
+        size += VarInt.encodedLength(directory.size()); // directory count
+        size += directory.size() * Constants.DIR_ENTRY_BYTES; // directory entries
         size += payload.remaining(); // payload
         return size;
     }
