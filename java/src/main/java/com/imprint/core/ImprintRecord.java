@@ -225,7 +225,7 @@ public final class ImprintRecord {
     }
     
     private void serializeDirectoryEntry(DirectoryEntry entry, ByteBuffer buffer) {
-        buffer.putInt(entry.getId());
+        buffer.putShort(entry.getId());
         buffer.put(entry.getTypeCode().getCode());
         buffer.putInt(entry.getOffset());
     }
@@ -236,7 +236,7 @@ public final class ImprintRecord {
                 "Not enough bytes for directory entry");
         }
         
-        int id = buffer.getInt();
+        short id = buffer.getShort();
         var typeCode = TypeCode.fromByte(buffer.get());
         int offset = buffer.getInt();
         
